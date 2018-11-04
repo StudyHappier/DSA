@@ -116,8 +116,27 @@ You may not alter the values in the list's nodes, only nodes itself may be chang
 
 
 ```
-public ListNode reverseKGroup(ListNode head, int k) {
-
+ListNode* reverseKGroup(ListNode* head, int k) {
+        if(head == nullptr || head->next ==nullptr)   // handle corner cases
+            return head; 
+        ListNode* next = nullptr; 
+        ListNode* curr = head; 
+        ListNode* prev = nullptr;
+        int count = k; 
+        
+        while(curr != nullptr and count > 0){  // routine reverse logic + we will only reverse nodes of length k each time 
+            next = curr->next; 
+            curr->next = prev; 
+            prev = curr; 
+            curr = next; 
+            count--; 
+        }
+        if(next){                                 // we still have some nodes, and the head is the new end node, since we have to link that, we call the it recursively to find their new head node
+            head->next = reverseKGroup(next,k);
+        }
+        return prev;  // prev is the new head in all our process. 
+        
+        
     }
 ```
 
@@ -125,15 +144,101 @@ public ListNode reverseKGroup(ListNode head, int k) {
 ## [4. Rotate List](https://leetcode.com/problems/rotate-list/description/)
 Given a linked list, rotate the list to the right by k places, where k is non-negative.
 
+```
+class Solution {
+private:
+    int calculate_size(ListNode* head){ // get the total size 
+        int count =0; 
+        while(head){
+            head = head->next; 
+            count++; 
+        }
+        return count; 
+    }
+    ListNode* get_end_node(ListNode* head){ // get the tail node, to convert it into a circular linked list
+        while(head->next)
+            head = head->next; 
+        return head; 
+    }
+    
+    ListNode* kth_node_from_end(ListNode* head, int k){// find the node before the kth node
+        ListNode* slow_ptr  =head; 
+        ListNode* fast_ptr = head; 
+        while(k){
+            fast_ptr = fast_ptr->next; 
+            k--; 
+        }
+        ListNode* prev_ptr = nullptr; 
+        while(fast_ptr){
+            prev_ptr = slow_ptr;
+            slow_ptr = slow_ptr->next; 
+            fast_ptr = fast_ptr->next; 
+        }
+        return prev_ptr;  // we want the node before kth node to remove the cycle. 
+        
+    }
+public:
+    ListNode* rotateRight(ListNode* head, int k) {
+        if(head == nullptr || head->next == nullptr)
+            return head; 
+        
+        int get_size = calculate_size(head); 
+        int rotation_required = k % get_size; 
+        if(rotation_required == 0)
+            return head; 
+        
+        ListNode* kth_node = kth_node_from_end(head,rotation_required); 
+        ListNode* end_node = get_end_node(head); 
+        end_node->next  = head;  // make it circular linked list, now all we need to do is make the kth_node as head,  
+        
+       
+        head = kth_node->next;  // make the kth node as the new head 
+        kth_node->next = nullptr;  // remove the cycle we created,
+        return head; 
+        
+        
+        
+    }
+```
+
 
 # Merge
 
 ## [5. Merge two sorted lists](https://leetcode.com/problems/merge-two-sorted-lists/description/)
 Merge two sorted linked lists and return it as a new list. The new list should be made by splicing together the nodes of the first two lists.
 ```
-public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
-
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        if(!l1)  return l2;  // corner-cases
+        if(!l2) return l1; 
+        
+        ListNode* dummy = new ListNode(-1); 
+        ListNode* head_last = dummy;  // to insert at the end of our new linked list 
+        
+        while(l1 and l2){
+            if(l1->val < l2->val){
+                head_last->next = l1; 
+                l1 = l1->next; 
+            }
+            else{
+                head_last->next = l2; 
+                l2 = l2->next; 
+            }
+            head_last = head_last->next; 
+        }
+        
+        if(l1){
+            head_last->next = l1; 
+        }
+        else{
+            head_last->next =l2; 
+        }
+        return dummy->next; 
+        
+        
     }
+};
 ```
 
 ## [6. Merge k Sorted Lists](https://leetcode.com/problems/merge-k-sorted-lists/description/)
