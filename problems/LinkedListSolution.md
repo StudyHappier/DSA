@@ -245,18 +245,95 @@ public:
 Merge k sorted linked lists and return it as one sorted list. Analyze and describe its complexity.
 
 ```
-public ListNode mergeKLists(ListNode[] lists) {
-
+class Solution {
+public:
+    struct compareNode{
+        bool operator()(ListNode* l1, ListNode*l2){
+            return l1->val > l2->val; 
+        }
+    }; 
+    
+    ListNode* mergeKLists(vector<ListNode*>& lists) {
+        priority_queue<ListNode*, vector<ListNode*>, compareNode> pq; 
+        for(auto i : lists){
+            while(i){    //read each linked lists and put them  into the priority queue
+                pq.push(i);  
+                i = i->next; 
+            }
+        }
+        ListNode* dummy= new ListNode(-1); 
+        ListNode* head_last = dummy; // we have to insert at the end 
+        while(!pq.empty()){     
+            head_last->next = pq.top(); // build the new linked list using the top ones  
+            pq.pop(); 
+            head_last = head_last->next; 
+        }
+        head_last->next = nullptr; 
+        return dummy->next; 
+        
     }
+};
 ```
 
 ## [7. Sort list](https://leetcode.com/problems/sort-list/description/)
 Sort a linked list in O(n log n) time using constant space complexity.
 
 ```
-public ListNode sortList(ListNode head) {
-
+/**
+ * Definition for singly-linked list.
+ * struct ListNode {
+ *     int val;
+ *     ListNode *next;
+ *     ListNode(int x) : val(x), next(NULL) {}
+ * };
+ */
+class Solution {
+private: 
+    // usual merge logic 
+    ListNode* merge(ListNode* l1, ListNode* l2){
+        if(!l1) return l2; 
+        if(!l2) return l1;
+        
+        ListNode* dummy = new ListNode(-1); 
+        ListNode* head = dummy; 
+        
+        while(l1 and l2){
+            if(l1->val < l2->val){
+                head->next = l1; 
+                l1 = l1->next; 
+            }
+            else{
+                head->next = l2; 
+                l2 = l2->next; 
+            }
+            head = head->next; 
+        }
+        if(l1){
+            head->next = l1; 
+        }
+        else{
+            head->next = l2; 
+        }
+        return dummy->next; 
     }
+public:
+    ListNode* sortList(ListNode* head) {
+        if(head == nullptr || head->next == nullptr)
+            return head; 
+        ListNode* slow = head;
+        ListNode* fast = head->next;  // very important, we need to find the first middle in case of even no of nodes.  
+        while(fast and fast->next){
+            fast = fast->next->next; 
+            slow = slow->next; 
+        }
+        fast = slow->next;     //split them into and sort them and then merge them, usual merge sort 
+        slow->next =nullptr;
+        ListNode* l1 = sortList(head); 
+        ListNode* l2 = sortList(fast); 
+        return merge(l1,l2);           // return the merged list at each step. 
+        
+    }
+};
 ```
 
 ## [8. Intersection of Two Linked Lists](https://leetcode.com/problems/intersection-of-two-linked-lists/description/)
